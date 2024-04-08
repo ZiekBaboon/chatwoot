@@ -1119,16 +1119,21 @@ export default {
 
       // Retrieve the email of the current conversation's sender
       const conversationContact = this.currentChat?.meta?.sender?.email || '';
-      let cc = emailAttributes.cc ? [...emailAttributes.cc] : [];
-      let to = [];
-
+      let cc = emailAttributes.cc ? [...emailAttributes.cc] : []; 
+      let to = []; 
+      const toAddresses = emailAttributes.to.filter(email => 
+        email !== 'support@mycompany.example.com' && // Exclude inbox email address
+        !email.startsWith('reply+') && // Exclude reply email addresses
+        email !== conversationContact // Exclude current conversation contact's email
+      );
+      cc = [...cc, ...toAddresses];
       // there might be a situation where the current conversation will include a message from a third person,
       // and the current conversation contact is in CC.
       // This is an edge-case, reported here: CW-1511 [ONLY FOR INTERNAL REFERENCE]
       // So we remove the current conversation contact's email from the CC list if present
-      if (cc.includes(conversationContact)) {
-        cc = cc.filter(email => email !== conversationContact);
-      }
+      if (cc.includes(conversationContact)) { 
+        cc = cc.filter(email => email !== conversationContact); 
+      } 
 
       // If the last incoming message sender is different from the conversation contact, add them to the "to"
       // and add the conversation contact to the CC
@@ -1138,13 +1143,12 @@ export default {
       }
 
       // Remove the conversation contact's email from the BCC list if present
-      let bcc = (emailAttributes.bcc || []).filter(
-        email => email !== conversationContact
-      );
+      let bcc = (emailAttributes.bcc || []).filter(email => email !== conversationContact); 
+
 
       // Ensure only unique email addresses are in the CC list
-      bcc = [...new Set(bcc)];
-      cc = [...new Set(cc)];
+      bcc = [...new Set(bcc)]; 
+      cc = [...new Set(cc)]; 
       to = [...new Set(to)];
 
       this.ccEmails = cc.join(', ');
